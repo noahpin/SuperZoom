@@ -207,6 +207,16 @@ class SuperZoom {
 		this.element.style.height = this.initialHeight * this.zoom + "px";
 		this.options.onTransform();
 	}
+    getTransform(){
+        return {
+            x: this.x,
+            y: this.y,
+            angle: this.angle,
+            scale: this.zoom,
+            origin: this.element.style.transformOrigin,
+            transform: this.element.style.transform
+        }
+    }
 	moveBy(x, y) {
 		this.moveTo(this.x + x, this.y + y);
 	}
