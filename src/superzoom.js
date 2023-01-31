@@ -211,6 +211,8 @@ class SuperZoom {
         return {
             x: this.x,
             y: this.y,
+            width: this.initialWidth * this.zoom,
+            height: this.initialHeight * this.zoom,
             angle: this.angle,
             scale: this.zoom,
             origin: this.element.style.transformOrigin,
