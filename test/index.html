@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperio SuperZoom Test</title>
+    <script src="../src/superzoom.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <img id="zoom" src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Bunsen_burner.jpg"></img>
+    </div>
+    <script>
+        var zm
+        window.onload = function () {
+        var elem = document.getElementById('zoom');
+         zm = new SuperZoom(elem, {
+            minZoom: 0.25,
+            onTransform: function (e) {
+            }, validateMousePan: function (e) {
+                console.log('a', e.button)
+                if(e.button == 1)
+                return true;
+            },
+            validateTouchPan: function (e) {
+                console.log('b', e.touches.length)
+                if(e.touches.length == 2)
+                return true;
+            },
+            zoomStep: 10,
+            snapRotation: true,
+            snapRotationStep: 45,
+            snapRotationTolerance: 10,
+        });
+        }
+
+    </script>
+    <style>
+        #container {
+            width: 100vw;
+            height: 100vh;
+            background: lightgray;
+            overflow: hidden;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #zoom {
+            position: absolute;
+        }
+    </style>
+</body>
+
+</html>
