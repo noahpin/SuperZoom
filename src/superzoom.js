@@ -60,7 +60,6 @@ class SuperZoom {
 		};
 		this.mouseMove = function (e) {
 			if (!this.doMousePan) return;
-			console.log("mousmove");
 			this.moveBy(e.clientX - this.prevMouseX, e.clientY - this.prevMouseY);
 			this.prevMouseX = e.clientX;
 			this.prevMouseY = e.clientY;
@@ -317,10 +316,12 @@ class SuperZoom {
 		return Math.abs(1 - sign * deltaAdjustedSpeed);
 	}
 	recenter() {
-		var r = this.container.getBoundingClientRect();
+		var r = this.element.getBoundingClientRect();
+		//this.setRotationOrigin(r.x + r.width/2, r.y + r.height/2);
+		this.rotateTo(0)
 		this.moveTo(
-			(r.width - this.initialWidth * this.zoom) / 2,
-			(r.height - this.initialHeight * this.zoom) / 2
+			(window.innerWidth - r.width)/2,
+			(window.innerHeight - r.height)/2
 		);
 	}
 }
