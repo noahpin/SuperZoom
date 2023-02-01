@@ -277,15 +277,15 @@ class SuperZoom {
 	}
 
     rotateBy(angle, x, y) {
-        x = x || this.getCenterOrigin().x;
-        y = y || this.getCenterOrigin().y;
         this.rotateTo(this.angle + angle, x, y);
     }
     rotateTo(angle, x, y) {
-        x = x || this.getCenterOrigin().x;
-        y = y || this.getCenterOrigin().y;
-        
-        this.setRotationOrigin(x, y);
+		if(x && y) {
+			this.setRotationOrigin(x, y);
+
+		}else {
+			this.setRotationOriginPercent(.5,.5)
+		}        
         this.angle = angle;
         this.repaint();
     }
