@@ -265,6 +265,17 @@ class SuperZoom {
         //this.repaint()
     }
 
+	setRotationOriginPercent(x, y) {
+        var prevR = this.element.getBoundingClientRect()
+        var previousX = prevR.x
+        var previousY = prevR.y
+        this.element.style.transformOrigin = `${x*100}% ${y*100}%`;
+        var r = this.element.getBoundingClientRect()
+        this.x += previousX - r.x
+        this.y += previousY - r.y
+        //this.repaint()
+	}
+
     rotateBy(angle, x, y) {
         x = x || this.getCenterOrigin().x;
         y = y || this.getCenterOrigin().y;
