@@ -42,9 +42,6 @@ class SuperZoom {
 
 		this.recenter();
 
-		document.body.addEventListener("touchstart", (e) => e.preventDefault(), {
-			passive: false,
-		});
 
 		/* mouse input handlers */
 
@@ -74,6 +71,9 @@ class SuperZoom {
             if(this.options.invertedZoom) sign = -sign;
 			var delta = sign * this.options.zoomStep;
 			this.zoomByMultiplier(this.getScaleMultiplier(delta) , e.clientX, e.clientY);
+			
+			e.preventDefault();
+			e.stopPropagation();
 		};
 
 		this.mouseDown = this.mouseDown.bind(this);
@@ -126,6 +126,9 @@ class SuperZoom {
 
                 
 			}
+			
+			e.preventDefault();
+			e.stopPropagation();
 		};
 		this.touchMove = function (e) {
 			if (!this.doTouchPan) return;
@@ -168,6 +171,9 @@ class SuperZoom {
                 this.prevTouchAngle = angle;
 
 			}
+			
+			e.preventDefault();
+			e.stopPropagation();
 		};
 		this.touchEnd = function (e) {
 			this.doTouchPan = false;
