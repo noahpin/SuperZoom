@@ -213,6 +213,7 @@ class SuperZoom {
 		this.options.onTransform();
 	}
     getTransform(){
+		var rect = this.getRect()
         return {
             x: this.x,
             y: this.y,
@@ -221,7 +222,9 @@ class SuperZoom {
             angle: this.angle,
             scale: this.zoom,
             origin: this.element.style.transformOrigin,
-            transform: this.element.style.transform
+            transform: this.element.style.transform,
+			centerX: rect.left + (rect.width / 2),
+			centerY: rect.top + (rect.height / 2)
         }
     }
 	moveBy(x, y) {
