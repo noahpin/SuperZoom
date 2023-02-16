@@ -4,6 +4,7 @@ class SuperZoom {
 		this.container = element.parentNode;
 		this.options = {
 			onTransform: options.onTransform || function () {},
+			onTouchPanComplete: options.onTouchPanComplete || function () {},
 			minZoom: options.minZoom || 1,
 			maxZoom: options.maxZoom || 200,
 			zoomStep: options.zoomStep || 10,
@@ -40,7 +41,11 @@ class SuperZoom {
 		this.initialWidth = this.rect.width;
 		this.initialHeight = this.rect.height;
 
+		this.transforming = false
+
 		this.recenter();
+		this.angle = this.options.initialAngle
+		this.rotateTo(this.angle)
 
 
 		/* mouse input handlers */
@@ -50,6 +55,7 @@ class SuperZoom {
 		this.prevMouseY = 0;
 
 		this.mouseDown = function (e) {
+			this.transforming = true
 			if (!this.options.validateMousePan(e)) return;
 			this.doMousePan = true;
 			this.prevMouseX = e.clientX;
@@ -62,6 +68,7 @@ class SuperZoom {
 			this.prevMouseY = e.clientY;
 		};
 		this.mouseUp = function (e) {
+			this.transforming = false
 			this.doMousePan = false;
 		};
 
@@ -86,6 +93,7 @@ class SuperZoom {
 		this.container.addEventListener("mouseup", this.mouseUp);
 		this.container.addEventListener("wheel", this.wheel);
 
+
 		/* touch input handlers */
 
 		this.doTouchPan = false;
@@ -99,6 +107,7 @@ class SuperZoom {
 
 		this.touchStart = function (e) {
 			if (!this.options.validateTouchPan(e)) return;
+			this.transforming = true
 			this.doTouchPan = true;
 			if (e.touches.length == 1) {
 				this.prevTouchX = e.touches[0].clientX;
@@ -176,16 +185,9 @@ class SuperZoom {
 			e.stopPropagation();
 		};
 		this.touchEnd = function (e) {
+			this.transforming = false
 			this.doTouchPan = false;
-
-            //detect if angle is within snap tolerance
-            if(this.options.snapRotation) {
-                var angle = this.angle;
-                var snapAngle = this.getClosestSnapAngle(angle);
-                if(Math.abs(snapAngle - angle) < this.options.snapTolerance) {
-                    this.rotateTo(snapAngle);
-                }
-            }
+			this.options.onTouchPanComplete(this.getTransform())
 		};
 
 		this.touchStart = this.touchStart.bind(this);
@@ -224,7 +226,7 @@ class SuperZoom {
             origin: this.element.style.transformOrigin,
             transform: this.element.style.transform,
 			centerX: rect.left + (rect.width / 2),
-			centerY: rect.top + (rect.height / 2)
+			centerY: rect.top + (rect.height / 2),
         }
     }
 	moveBy(x, y) {
@@ -295,7 +297,7 @@ class SuperZoom {
 		}else {
 			this.setRotationOriginPercent(.5,.5)
 		}        
-        this.angle = angle;
+        this.angle = this.clamp(angle, 0, 360);
         this.repaint();
     }
     
@@ -329,6 +331,13 @@ class SuperZoom {
     toDegrees(angle) {
         return angle * (180 / Math.PI);
     }
+
+	clamp(num, min, max) {
+		if(num < min) num+= max
+		if(num > max) num-= max
+		if( notify)notify.log(num)
+		return num
+	}
 
 	getScaleMultiplier(delta) {
 		var sign = Math.sign(delta);

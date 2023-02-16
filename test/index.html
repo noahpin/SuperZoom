@@ -6,12 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hyperio SuperZoom Test</title>
+    <script></script>
     <script src="../src/superzoom.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/Hyperiooo/Alrt.js@v0.1.2/src/alrt.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Hyperiooo/Alrt.js@v0.1.1/src/alrt.css" />
 </head>
 
 <body>
     <div id="container">
-        <img id="zoom" src="https://static.thenounproject.com/png/29200-200.png"></img>
+        <img id="zoom" src="./test.png"></img>
     </div>
     <script>
         var zm
@@ -30,13 +33,41 @@
                 if(e.touches.length == 2)
                 return true;
             },
+            onTouchPanComplete: function(e) {
+                var threshold = 5
+                var snapAngle = 90
+                var targetAngle  = snapAngle * Math.round(e.angle/snapAngle)
+                var curAngle = e.angle
+                if((e.angle) % snapAngle < threshold || e.angle%snapAngle > snapAngle-threshold){
+                    rn()
+                }
+                function rn() {
+                    if(Math.abs(targetAngle - curAngle) < 0.1 || zm.transforming) {
+                        zm.rotateTo(targetAngle)
+                        return}
+                    curAngle = lerp(curAngle, targetAngle, 0.2)
+                    zm.rotateTo(curAngle)
+                    requestAnimationFrame(rn)
+                }
+            },
             zoomStep: 10,
             snapRotation: true,
             snapRotationStep: 45,
             snapRotationTolerance: 10,
-            initialAngle: 45,
+            initialAngle: 120,
         });
+        notify = new Alrt({
+    position: "top-center",
+    duration: 5000, //default duration
+    theme: "bitshift-confirmation",
+    behavior: "overwrite"
+})
         }
+        var notify = null
+
+        function lerp (start, end, amt){
+  return (1-amt)*start+amt*end
+}
 
     </script>
     <style>
