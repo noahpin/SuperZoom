@@ -312,13 +312,13 @@ class SuperZoom {
         this.rotateTo(this.angle + angle, x, y);
     }
     rotateTo(angle, x, y) {
-        this.angle = this.clamp(angle, 0, 360);
 		if(x && y) {
 			this.setRotationOrigin(x, y);
 
 		}else {
 			this.setRotationOriginPercent(.5,.5)
-		}        
+		}   
+        this.angle = this.clamp(angle, 0, 360);     
         this.repaint();
     }
     
