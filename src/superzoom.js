@@ -260,17 +260,38 @@ class SuperZoom {
 	}
     /*x and y are global, set origin to be relative to the objects width and height */
     setRotationOrigin(x, y) {
+		
         //x = x || this.getCenterOrigin().x;
         //y = y || this.getCenterOrigin().y;
-        x -= this.getRect().x;
-        y -= this.getRect().y;
-        x = x / this.getRect().width
-        y = y / this.getRect().height
+        x -= this.getRect().left;
+        y -= this.getRect().top;
+		var centerX = this.getRect().width/2
+		var centerY = this.getRect().height/2
+        x -= centerX
+        y -= centerY
+		var r = Math.sqrt(x * x + y * y);
+		var theta = Math.atan2(y, x);
+		theta -= this.toRadians(this.angle);
+		x = r * Math.cos(theta);
+		y = r * Math.sin(theta);
+
+		var rawX = (x + centerX) / this.zoom;
+		var rawY = (y + centerY) / this.zoom;
+
+		//document.getElementById("debugPoint").style.left = rawX+ "px"
+		//document.getElementById("debugPoint").style.top = rawY + "px"
+
+    	rawX += (0.5 - ((this.getRect().width /(this.zoom * this.initialWidth))    / 2) ) * this.initialWidth;
+    	rawY += (0.5 - ((this.getRect().height / (this.zoom * this.initialHeight)) / 2)) * this.initialHeight;
+		rawX = rawX/this.initialWidth
+		rawY = rawY / this.initialHeight
+		//notify.log(rawX)
         var prevR = this.element.getBoundingClientRect()
         var previousX = prevR.x
         var previousY = prevR.y
-        this.element.style.transformOrigin = `${x*100}% ${y*100}%`;
-        var r = this.element.getBoundingClientRect()
+        this.element.style.transformOrigin = `${rawX*100}% ${rawY*100}%`;
+		
+        r = this.element.getBoundingClientRect()
         this.x += previousX - r.x
         this.y += previousY - r.y
         //this.repaint()
@@ -291,13 +312,13 @@ class SuperZoom {
         this.rotateTo(this.angle + angle, x, y);
     }
     rotateTo(angle, x, y) {
+        this.angle = this.clamp(angle, 0, 360);
 		if(x && y) {
 			this.setRotationOrigin(x, y);
 
 		}else {
 			this.setRotationOriginPercent(.5,.5)
 		}        
-        this.angle = this.clamp(angle, 0, 360);
         this.repaint();
     }
     
@@ -335,7 +356,6 @@ class SuperZoom {
 	clamp(num, min, max) {
 		if(num < min) num+= max
 		if(num > max) num-= max
-		if( notify)notify.log(num)
 		return num
 	}
 

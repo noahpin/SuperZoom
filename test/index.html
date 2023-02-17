@@ -13,6 +13,7 @@
 </head>
 
 <body>
+    <div id="debugPoint"></div>
     <div id="container">
         <img id="zoom" src="./test.png"></img>
     </div>
@@ -54,7 +55,7 @@
             snapRotation: true,
             snapRotationStep: 45,
             snapRotationTolerance: 10,
-            initialAngle: 120,
+            initialAngle: 0,
         });
         notify = new Alrt({
     position: "top-center",
@@ -71,6 +72,9 @@
 
     </script>
     <style>
+        #debugPoint {
+            position:absolute;width:2px;height:2px;background:blue;z-index: 1000;
+        }
         #container {
             width: 100vw;
             height: 100vh;
