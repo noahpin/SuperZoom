@@ -187,7 +187,7 @@ class SuperZoom {
 		this.touchEnd = function (e) {
 			this.transforming = false
 			this.doTouchPan = false;
-			this.options.onTouchPanComplete(this.getTransform())
+			this.options.onTouchPanComplete(this.getTransform(), this.prevTouchX, this.prevTouchY)
 		};
 
 		this.touchStart = this.touchStart.bind(this);
