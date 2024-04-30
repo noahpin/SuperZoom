@@ -17,7 +17,8 @@ class SuperZoom {
 			snapRotationStep: options.snapRotationStep || 90,
 			snapRotationTolerance: options.snapRotationTolerance || 10,
 			wheelBehavior: options.wheelBehavior || "scroll",
-			wheelRotateSpeed: options.wheelRotateSpeed != null ? options.wheelRotateSpeed : 0.1,
+			wheelRotateSpeed:
+				options.wheelRotateSpeed != null ? options.wheelRotateSpeed : 0.1,
 			validateMousePan:
 				options.validateMousePan ||
 				function () {
@@ -74,6 +75,7 @@ class SuperZoom {
 		};
 
 		this.wheel = function (e) {
+			e.preventDefault();
 			if (!this.options.validateMouseWheel(e)) return;
 			var sign = e.deltaY > 0 ? 1 : -1;
 			if (this.options.invertedZoom) sign = -sign;
@@ -91,7 +93,11 @@ class SuperZoom {
 						e.clientX,
 						e.clientY
 					);
-					this.rotateBy(e.deltaX * this.options.wheelRotateSpeed, e.clientX, e.clientY)
+					this.rotateBy(
+						e.deltaX * this.options.wheelRotateSpeed,
+						e.clientX,
+						e.clientY
+					);
 				} else {
 					this.moveBy(-1 * e.deltaX, -1 * e.deltaY);
 				}
