@@ -112,10 +112,10 @@ class SuperZoom {
 		this.mouseUp = this.mouseUp.bind(this);
 		this.wheel = this.wheel.bind(this);
 
-		this.container.addEventListener("mousedown", this.mouseDown);
-		this.container.addEventListener("mousemove", this.mouseMove);
-		this.container.addEventListener("mouseup", this.mouseUp);
-		this.container.addEventListener("wheel", this.wheel);
+		this.container.addEventListener("mousedown", this.mouseDown, {passive: false});
+		this.container.addEventListener("mousemove", this.mouseMove, {passive: false});
+		this.container.addEventListener("mouseup", this.mouseUp, {passive: false});
+		this.container.addEventListener("wheel", this.wheel, {passive: false});
 
 		/* touch input handlers */
 
