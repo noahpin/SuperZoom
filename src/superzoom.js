@@ -17,7 +17,7 @@ class SuperZoom {
 			snapRotationStep: options.snapRotationStep || 90,
 			snapRotationTolerance: options.snapRotationTolerance || 10,
 			wheelBehavior: options.wheelBehavior || "scroll",
-			wheelRotateSpeed: options.wheelRotateSpeed || 0.1,
+			wheelRotateSpeed: options.wheelRotateSpeed != null ? options.wheelRotateSpeed : 0.1,
 			validateMousePan:
 				options.validateMousePan ||
 				function () {
@@ -85,7 +85,6 @@ class SuperZoom {
 					e.clientY
 				);
 			} else if (this.options.wheelBehavior == "scroll") {
-				console.log(e.ctrlKey);
 				if (e.ctrlKey) {
 					this.zoomByMultiplier(
 						this.getScaleMultiplier(e.deltaY),
@@ -346,7 +345,6 @@ class SuperZoom {
 		for (var i = 0; i < 360; i += this.options.snapRotationStep) {
 			var diff = Math.abs(i - angle);
 			if (diff < minDiff && diff < this.options.snapRotationTolerance) {
-				console.log(diff, i);
 				minDiff = diff;
 				snapAngle = i;
 			}

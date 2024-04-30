@@ -23,6 +23,7 @@
         var elem = document.getElementById('zoom');
          zm = new SuperZoom(elem, {
             minZoom: 0.25,
+            wheelRotateSpeed: 0,
             onTransform: function (e) {
             }, validateMousePan: function (e) {
                 console.log('a', e.button)
