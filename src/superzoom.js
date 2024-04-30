@@ -8,14 +8,16 @@ class SuperZoom {
 			minZoom: options.minZoom || 1,
 			maxZoom: options.maxZoom || 200,
 			zoomStep: options.zoomStep || 10,
-            invertedZoom: options.invertedZoom || false,
+			invertedZoom: options.invertedZoom || false,
 			initialZoom: options.initialZoom || 1,
 			initialX: options.initialX || 0,
 			initialY: options.initialY || 0,
 			initialAngle: options.initialAngle || 0,
-            snapRotation: options.snapRotation || false,
-            snapRotationStep: options.snapRotationStep || 90,
-            snapRotationTolerance: options.snapRotationTolerance || 10,
+			snapRotation: options.snapRotation || false,
+			snapRotationStep: options.snapRotationStep || 90,
+			snapRotationTolerance: options.snapRotationTolerance || 10,
+			wheelBehavior: options.wheelBehavior || "scroll",
+			wheelRotateSpeed: options.wheelRotateSpeed || 0.1,
 			validateMousePan:
 				options.validateMousePan ||
 				function () {
@@ -41,12 +43,11 @@ class SuperZoom {
 		this.initialWidth = this.rect.width;
 		this.initialHeight = this.rect.height;
 
-		this.transforming = false
+		this.transforming = false;
 
 		this.recenter();
-		this.angle = this.options.initialAngle
-		this.rotateTo(this.angle)
-
+		this.angle = this.options.initialAngle;
+		this.rotateTo(this.angle);
 
 		/* mouse input handlers */
 
@@ -55,7 +56,7 @@ class SuperZoom {
 		this.prevMouseY = 0;
 
 		this.mouseDown = function (e) {
-			this.transforming = true
+			this.transforming = true;
 			if (!this.options.validateMousePan(e)) return;
 			this.doMousePan = true;
 			this.prevMouseX = e.clientX;
@@ -68,17 +69,35 @@ class SuperZoom {
 			this.prevMouseY = e.clientY;
 		};
 		this.mouseUp = function (e) {
-			this.transforming = false
+			this.transforming = false;
 			this.doMousePan = false;
 		};
 
 		this.wheel = function (e) {
 			if (!this.options.validateMouseWheel(e)) return;
 			var sign = e.deltaY > 0 ? 1 : -1;
-            if(this.options.invertedZoom) sign = -sign;
+			if (this.options.invertedZoom) sign = -sign;
 			var delta = sign * this.options.zoomStep;
-			this.zoomByMultiplier(this.getScaleMultiplier(delta) , e.clientX, e.clientY);
-			
+			if (this.options.wheelBehavior == "zoom") {
+				this.zoomByMultiplier(
+					this.getScaleMultiplier(delta),
+					e.clientX,
+					e.clientY
+				);
+			} else if (this.options.wheelBehavior == "scroll") {
+				console.log(e.ctrlKey);
+				if (e.ctrlKey) {
+					this.zoomByMultiplier(
+						this.getScaleMultiplier(e.deltaY),
+						e.clientX,
+						e.clientY
+					);
+					this.rotateBy(e.deltaX * this.options.wheelRotateSpeed, e.clientX, e.clientY)
+				} else {
+					this.moveBy(-1 * e.deltaX, -1 * e.deltaY);
+				}
+			}
+
 			e.preventDefault();
 			e.stopPropagation();
 		};
@@ -93,7 +112,6 @@ class SuperZoom {
 		this.container.addEventListener("mouseup", this.mouseUp);
 		this.container.addEventListener("wheel", this.wheel);
 
-
 		/* touch input handlers */
 
 		this.doTouchPan = false;
@@ -107,7 +125,7 @@ class SuperZoom {
 
 		this.touchStart = function (e) {
 			if (!this.options.validateTouchPan(e)) return;
-			this.transforming = true
+			this.transforming = true;
 			this.doTouchPan = true;
 			if (e.touches.length == 1) {
 				this.prevTouchX = e.touches[0].clientX;
@@ -125,17 +143,15 @@ class SuperZoom {
 					Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
 						Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
 				);
-                this.prevTouchDistance = distance;
+				this.prevTouchDistance = distance;
 
-                var angle = Math.atan2(
-                    e.touches[0].clientY - e.touches[1].clientY,
-                    e.touches[0].clientX - e.touches[1].clientX
-                );
-                this.prevTouchAngle = angle;
-
-                
+				var angle = Math.atan2(
+					e.touches[0].clientY - e.touches[1].clientY,
+					e.touches[0].clientX - e.touches[1].clientX
+				);
+				this.prevTouchAngle = angle;
 			}
-			
+
 			e.preventDefault();
 			e.stopPropagation();
 		};
@@ -161,33 +177,33 @@ class SuperZoom {
 					Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) +
 						Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2)
 				);
-                
-                var scaleMultiplier =
-                1 + (distance / this.prevTouchDistance - 1);
 
-                this.zoomByMultiplier(scaleMultiplier, x, y);
-                
-                this.prevTouchDistance = distance;
+				var scaleMultiplier = 1 + (distance / this.prevTouchDistance - 1);
+
+				this.zoomByMultiplier(scaleMultiplier, x, y);
+
+				this.prevTouchDistance = distance;
 
 				var angle = Math.atan2(
 					e.touches[0].clientY - e.touches[1].clientY,
 					e.touches[0].clientX - e.touches[1].clientX
 				);
-                this.rotateBy(this.toDegrees(angle - this.prevTouchAngle), x, y);
+				this.rotateBy(this.toDegrees(angle - this.prevTouchAngle), x, y);
 
-
-
-                this.prevTouchAngle = angle;
-
+				this.prevTouchAngle = angle;
 			}
-			
+
 			e.preventDefault();
 			e.stopPropagation();
 		};
 		this.touchEnd = function (e) {
-			this.transforming = false
+			this.transforming = false;
 			this.doTouchPan = false;
-			this.options.onTouchPanComplete(this.getTransform(), this.prevTouchX, this.prevTouchY)
+			this.options.onTouchPanComplete(
+				this.getTransform(),
+				this.prevTouchX,
+				this.prevTouchY
+			);
 		};
 
 		this.touchStart = this.touchStart.bind(this);
@@ -214,21 +230,21 @@ class SuperZoom {
 		this.element.style.height = this.initialHeight * this.zoom + "px";
 		this.options.onTransform();
 	}
-    getTransform(){
-		var rect = this.getRect()
-        return {
-            x: this.x,
-            y: this.y,
-            width: this.initialWidth * this.zoom,
-            height: this.initialHeight * this.zoom,
-            angle: this.angle,
-            scale: this.zoom,
-            origin: this.element.style.transformOrigin,
-            transform: this.element.style.transform,
-			centerX: rect.left + (rect.width / 2),
-			centerY: rect.top + (rect.height / 2),
-        }
-    }
+	getTransform() {
+		var rect = this.getRect();
+		return {
+			x: this.x,
+			y: this.y,
+			width: this.initialWidth * this.zoom,
+			height: this.initialHeight * this.zoom,
+			angle: this.angle,
+			scale: this.zoom,
+			origin: this.element.style.transformOrigin,
+			transform: this.element.style.transform,
+			centerX: rect.left + rect.width / 2,
+			centerY: rect.top + rect.height / 2,
+		};
+	}
 	moveBy(x, y) {
 		this.moveTo(this.x + x, this.y + y);
 	}
@@ -239,18 +255,18 @@ class SuperZoom {
 	}
 	/* zooms with x and y being a coordinates of the zoom origin */
 	zoomBy(zoom, x, y) {
-        x = x || this.getCenterOrigin().x;
-        y = y || this.getCenterOrigin().y;
+		x = x || this.getCenterOrigin().x;
+		y = y || this.getCenterOrigin().y;
 		this.zoomTo(this.zoom + zoom, x, y);
 	}
-    zoomByMultiplier(multiplier, x, y) {
-        x = x || this.getCenterOrigin().x;
-        y = y || this.getCenterOrigin().y;
-        this.zoomTo(this.zoom * multiplier, x, y);
-    }
+	zoomByMultiplier(multiplier, x, y) {
+		x = x || this.getCenterOrigin().x;
+		y = y || this.getCenterOrigin().y;
+		this.zoomTo(this.zoom * multiplier, x, y);
+	}
 	zoomTo(zoom, x, y) {
-        x = x || this.getCenterOrigin().x;
-        y = y || this.getCenterOrigin().y;
+		x = x || this.getCenterOrigin().x;
+		y = y || this.getCenterOrigin().y;
 		zoom = Math.max(this.options.minZoom, Math.min(this.options.maxZoom, zoom));
 		var zoomFactor = zoom / this.zoom;
 		this.zoom = zoom;
@@ -258,17 +274,16 @@ class SuperZoom {
 		this.y = y - (y - this.y) * zoomFactor;
 		this.repaint();
 	}
-    /*x and y are global, set origin to be relative to the objects width and height */
-    setRotationOrigin(x, y) {
-		
-        //x = x || this.getCenterOrigin().x;
-        //y = y || this.getCenterOrigin().y;
-        x -= this.getRect().left;
-        y -= this.getRect().top;
-		var centerX = this.getRect().width/2
-		var centerY = this.getRect().height/2
-        x -= centerX
-        y -= centerY
+	/*x and y are global, set origin to be relative to the objects width and height */
+	setRotationOrigin(x, y) {
+		//x = x || this.getCenterOrigin().x;
+		//y = y || this.getCenterOrigin().y;
+		x -= this.getRect().left;
+		y -= this.getRect().top;
+		var centerX = this.getRect().width / 2;
+		var centerY = this.getRect().height / 2;
+		x -= centerX;
+		y -= centerY;
 		var r = Math.sqrt(x * x + y * y);
 		var theta = Math.atan2(y, x);
 		theta -= this.toRadians(this.angle);
@@ -281,82 +296,85 @@ class SuperZoom {
 		//document.getElementById("debugPoint").style.left = rawX+ "px"
 		//document.getElementById("debugPoint").style.top = rawY + "px"
 
-    	rawX += (0.5 - ((this.getRect().width /(this.zoom * this.initialWidth))    / 2) ) * this.initialWidth;
-    	rawY += (0.5 - ((this.getRect().height / (this.zoom * this.initialHeight)) / 2)) * this.initialHeight;
-		rawX = rawX/this.initialWidth
-		rawY = rawY / this.initialHeight
+		rawX +=
+			(0.5 - this.getRect().width / (this.zoom * this.initialWidth) / 2) *
+			this.initialWidth;
+		rawY +=
+			(0.5 - this.getRect().height / (this.zoom * this.initialHeight) / 2) *
+			this.initialHeight;
+		rawX = rawX / this.initialWidth;
+		rawY = rawY / this.initialHeight;
 		//notify.log(rawX)
-        var prevR = this.element.getBoundingClientRect()
-        var previousX = prevR.x
-        var previousY = prevR.y
-        this.element.style.transformOrigin = `${rawX*100}% ${rawY*100}%`;
-		
-        r = this.element.getBoundingClientRect()
-        this.x += previousX - r.x
-        this.y += previousY - r.y
-        //this.repaint()
-    }
+		var prevR = this.element.getBoundingClientRect();
+		var previousX = prevR.x;
+		var previousY = prevR.y;
+		this.element.style.transformOrigin = `${rawX * 100}% ${rawY * 100}%`;
 
-	setRotationOriginPercent(x, y) {
-        var prevR = this.element.getBoundingClientRect()
-        var previousX = prevR.x
-        var previousY = prevR.y
-        this.element.style.transformOrigin = `${x*100}% ${y*100}%`;
-        var r = this.element.getBoundingClientRect()
-        this.x += previousX - r.x
-        this.y += previousY - r.y
-        //this.repaint()
+		r = this.element.getBoundingClientRect();
+		this.x += previousX - r.x;
+		this.y += previousY - r.y;
+		//this.repaint()
 	}
 
-    rotateBy(angle, x, y) {
-        this.rotateTo(this.angle + angle, x, y);
-    }
-    rotateTo(angle, x, y) {
-		if(x && y) {
+	setRotationOriginPercent(x, y) {
+		var prevR = this.element.getBoundingClientRect();
+		var previousX = prevR.x;
+		var previousY = prevR.y;
+		this.element.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+		var r = this.element.getBoundingClientRect();
+		this.x += previousX - r.x;
+		this.y += previousY - r.y;
+		//this.repaint()
+	}
+
+	rotateBy(angle, x, y) {
+		this.rotateTo(this.angle + angle, x, y);
+	}
+	rotateTo(angle, x, y) {
+		if (x && y) {
 			this.setRotationOrigin(x, y);
+		} else {
+			this.setRotationOriginPercent(0.5, 0.5);
+		}
+		this.angle = this.clamp(angle, 0, 360);
+		this.repaint();
+	}
 
-		}else {
-			this.setRotationOriginPercent(.5,.5)
-		}   
-        this.angle = this.clamp(angle, 0, 360);     
-        this.repaint();
-    }
-    
-    getClosestSnapAngle(angle) {
-        var snapAngle = 0;
-        var minDiff = 360;
-        for(var i = 0; i < 360; i += this.options.snapRotationStep) {
-            var diff = Math.abs(i - angle);
-            if(diff < minDiff && diff < this.options.snapRotationTolerance) {
-                console.log(diff, i)
-                minDiff = diff;
-                snapAngle = i;
-            }
-        }
-        return snapAngle;
-    }
+	getClosestSnapAngle(angle) {
+		var snapAngle = 0;
+		var minDiff = 360;
+		for (var i = 0; i < 360; i += this.options.snapRotationStep) {
+			var diff = Math.abs(i - angle);
+			if (diff < minDiff && diff < this.options.snapRotationTolerance) {
+				console.log(diff, i);
+				minDiff = diff;
+				snapAngle = i;
+			}
+		}
+		return snapAngle;
+	}
 
-    getCenterOrigin() {
-        return {
-            x: this.x + this.getRect().width / 2,
-            y: this.y + this.getRect().height / 2
-        }
-    }
-    getRect() {
-        return this.element.getBoundingClientRect()
-    }
+	getCenterOrigin() {
+		return {
+			x: this.x + this.getRect().width / 2,
+			y: this.y + this.getRect().height / 2,
+		};
+	}
+	getRect() {
+		return this.element.getBoundingClientRect();
+	}
 
-    toRadians(angle) {
-        return angle * (Math.PI / 180);
-    }
-    toDegrees(angle) {
-        return angle * (180 / Math.PI);
-    }
+	toRadians(angle) {
+		return angle * (Math.PI / 180);
+	}
+	toDegrees(angle) {
+		return angle * (180 / Math.PI);
+	}
 
 	clamp(num, min, max) {
-		if(num < min) num+= max
-		if(num > max) num-= max
-		return num
+		if (num < min) num += max;
+		if (num > max) num -= max;
+		return num;
 	}
 
 	getScaleMultiplier(delta) {
@@ -367,10 +385,10 @@ class SuperZoom {
 	recenter() {
 		var r = this.element.getBoundingClientRect();
 		//this.setRotationOrigin(r.x + r.width/2, r.y + r.height/2);
-		this.rotateTo(0)
+		this.rotateTo(0);
 		this.moveTo(
-			(window.innerWidth - r.width)/2,
-			(window.innerHeight - r.height)/2
+			(window.innerWidth - r.width) / 2,
+			(window.innerHeight - r.height) / 2
 		);
 	}
 }
